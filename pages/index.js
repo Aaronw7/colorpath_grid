@@ -1,19 +1,56 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
-import { Grid, ColorNode, addNodeToGrid } from '../utils/colorNode';
+import { ColorNode, findAdjacentNodes, colorDifference } from '../utils/colorNode';
 
 export default function Home() {
-  const [grid, setGrid] = useState(new Grid());
+  const [grid, setGrid] = useState({ nodes: [] });
   const [clickedCells, setClickedCells] = useState({});
+  const [highlightedCells, setHighlightedCells] = useState({});
   const deltaEThreshold = 20;
 
+  const highlightPredecessors = (node) => {
+    if (!node) return;
+
+    const key = `${node.position.x},${node.position.y}`;
+
+    setHighlightedCells(prev => ({ ...prev, [key]: true }));
+
+    node.predecessors.forEach(predPos => {
+      const predKey = `${predPos.x},${predPos.y}`;
+      const predNode = grid.nodes.find(n => `${n.position.x},${n.position.y}` === predKey);
+      highlightPredecessors(predNode);
+    });
+  };
+
   const handleCellClick = (x, y) => {
+    const tempGrid = { ...grid };
     const key = `${x},${y}`;
-    console.log(`Clicked cell at x: ${x}, y: ${y}`);
+
+    const existingNode = grid.nodes.find(node => `${node.position.x},${node.position.y}` === key);
+
+    if (existingNode) {
+      console.log(`Cell at x: ${x}, y: ${y} is already filled. Highlighting path to origin.`);
+      highlightPredecessors(existingNode);
+      return;
+    }
+
+    const adjacentNodes = findAdjacentNodes(tempGrid, x, y);
+    let predecessors = [];
+
+    if (adjacentNodes.length > 0) {
+      predecessors = adjacentNodes.map(node => node.position);
+    }
+
+    const newNode = new ColorNode('bg-red-500', { x, y }, predecessors);
+    tempGrid.nodes.push(newNode);
+
+    setGrid(tempGrid);
     setClickedCells(prevState => ({
       ...prevState,
-      [key]: !prevState[key]
+      [key]: true
     }));
+
+    console.log(`Added node at x: ${x}, y: ${y}`);
   };
 
   const renderGrid = () => {
@@ -33,10 +70,10 @@ export default function Home() {
         rowVisual.push(
           <div
             key={cellKey}
-            className={`w-4 h-4 border ${clickedCells[cellKey] ? 'bg-red-500' : 'bg-transparent'} cursor-pointer`}
+            className={`w-4 h-4 border ${highlightedCells[cellKey] ? 'border-yellow-400' : ''} ${clickedCells[cellKey] ? 'bg-red-500' : 'bg-transparent'} cursor-pointer`}
             onClick={() => handleCellClick(adjustedX, adjustedY)}
           >
-            {/* Future Modal/Sidebar: Display node info or coordinates */}
+            {/* FUTURE MODAL/SIDEBAR: Display node info or coordinates */}
           </div>
         );
       }
@@ -44,12 +81,11 @@ export default function Home() {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-0">
+      <div className="flex w-full h-full grid grid-cols-1 gap-0">
         {gridVisual}
       </div>
     );
   };
-
 
   return (
     <div>
