@@ -40,7 +40,7 @@ export default function Home() {
           </div>
         );
       }
-      gridVisual.push(<div key={`row-${y}`} className="flex">{rowVisual}</div>);
+      gridVisual.push(<div key={`row-${y}`} className="flex justify-center">{rowVisual}</div>);
     }
 
     return (
