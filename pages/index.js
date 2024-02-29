@@ -29,9 +29,12 @@ export default function Home() {
     const existingNode = grid.nodes.find(node => `${node.position.x},${node.position.y}` === key);
 
     if (existingNode) {
+      setHighlightedCells({});
       console.log(`Cell at x: ${x}, y: ${y} is already filled. Highlighting path to origin.`);
       highlightPredecessors(existingNode);
       return;
+    } else {
+      setHighlightedCells({});
     }
 
     const adjacentNodes = findAdjacentNodes(tempGrid, x, y);
@@ -70,7 +73,7 @@ export default function Home() {
         rowVisual.push(
           <div
             key={cellKey}
-            className={`w-4 h-4 border ${highlightedCells[cellKey] ? 'border-yellow-400' : ''} ${clickedCells[cellKey] ? 'bg-red-500' : 'bg-transparent'} cursor-pointer`}
+            className={`w-4 h-4 border ${highlightedCells[cellKey] ? 'border-green-400' : ''} ${clickedCells[cellKey] ? 'bg-red-500' : 'bg-transparent'} cursor-pointer`}
             onClick={() => handleCellClick(adjustedX, adjustedY)}
           >
             {/* FUTURE MODAL/SIDEBAR: Display node info or coordinates */}
